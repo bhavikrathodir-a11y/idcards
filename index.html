@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#b3121f">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="ID Cards">
+<title>Jyoti ID Cards</title>
+<link rel="manifest" href="manifest.json">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<script src="config.js"></script>
+<style>
+:root{--red:#b3121f;--red2:#8c0d18;--yel:#ffcc00;--ink:#1c1917;--mut:#6b7280;--bg:#f6f4f1}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;background:var(--bg);color:var(--ink);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif}
+.hide{display:none!important}
+button{font:inherit;cursor:pointer;border:0}
+/* home */
+#home{min-height:100%;display:flex;flex-direction:column}
+.hero{background:linear-gradient(135deg,var(--red),var(--red2));color:#fff;padding:calc(26px + env(safe-area-inset-top)) 22px 34px}
+.hero img{width:54px;height:54px;border-radius:14px;box-shadow:0 4px 12px rgba(0,0,0,.25)}
+.hero h1{margin:12px 0 2px;font-size:24px}.hero p{margin:0;opacity:.85;font-size:14px}
+.tiles{padding:18px;display:grid;gap:14px;max-width:560px;width:100%;margin:-18px auto 0}
+.tile{background:#fff;border-radius:18px;padding:18px;display:flex;gap:16px;align-items:center;box-shadow:0 6px 20px rgba(80,20,20,.10);text-align:left;width:100%}
+.tile .ic{width:56px;height:56px;border-radius:16px;display:grid;place-items:center;flex:none;color:#fff;font-weight:800;font-size:17px}
+.tile b{display:block;font-size:18px}.tile span{display:block;color:var(--mut);font-size:13px;margin-top:2px}
+.tile .go{margin-left:auto;font-size:26px;color:#c4c0bb}
+.state{display:inline-block;margin-top:6px;font-size:12px;font-weight:600;border-radius:99px;padding:2px 9px;background:#f1f5f9;color:#475569}
+.state.ok{background:#dcfce7;color:#166534}
+.foot{margin-top:auto;padding:18px;text-align:center;color:var(--mut);font-size:13px}
+.foot button{background:none;color:var(--red);font-weight:600;padding:8px 12px}
+#installBox{max-width:560px;margin:0 auto;padding:0 18px}
+#installBox button{width:100%;background:var(--yel);color:#7a0a13;font-weight:700;border-radius:14px;padding:13px}
+/* frame */
+#frameView{position:fixed;inset:0;display:flex;flex-direction:column;background:#fff}
+.bar{background:var(--red);color:#fff;display:flex;align-items:center;gap:6px;padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
+.bar button{background:rgba(255,255,255,.14);color:#fff;border-radius:10px;padding:7px 11px;font-weight:600}
+.bar .t{flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
+#frm{flex:1;border:0;width:100%;background:#fff}
+#loading{position:absolute;left:0;right:0;top:52px;text-align:center;padding:40px;color:var(--mut)}
+/* login sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(20,10,10,.55);display:flex;align-items:flex-end;justify-content:center;z-index:10}
+.sheet{background:#fff;width:100%;max-width:520px;border-radius:22px 22px 0 0;padding:22px 20px calc(22px + env(safe-area-inset-bottom))}
+@media(min-width:600px){.sheet-bg{align-items:center}.sheet{border-radius:22px}}
+.sheet h2{margin:0 0 4px;font-size:20px}.sheet p{margin:0 0 14px;color:var(--mut);font-size:14px}
+.sheet input{width:100%;font:inherit;font-size:17px;padding:13px 14px;border:1.5px solid #d6d3d1;border-radius:12px;outline:none}
+.sheet input:focus{border-color:var(--red)}
+.sheet label{display:flex;gap:8px;align-items:center;margin:12px 0 4px;font-size:14px;color:#44403c}
+.sheet .row{display:flex;gap:10px;margin-top:16px}
+.sheet .row button{flex:1;padding:13px;border-radius:12px;font-weight:700}
+.b1{background:var(--red);color:#fff}.b2{background:#f1f5f9;color:var(--ink)}
+.err{color:#b91c1c;font-size:13px;margin-top:8px}
+</style>
+</head>
+<body>
+<div id="home">
+  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">ID Card Manager</h1><p>Departmental &amp; GDS ID card orders &middot; owner &amp; staff app</p></div>
+  <div class="tiles">
+    <button class="tile" data-sys="id"><div class="ic" style="background:#b3121f">ID</div><div><b>Departmental ID Card</b><span>Orders, proofs, print PDF</span><div class="state" data-state="id"></div></div><div class="go">&rsaquo;</div></button>
+    <button class="tile" data-sys="gds"><div class="ic" style="background:#1f3a8a">GDS</div><div><b>GDS ID Card</b><span>Gramin Dak Sevak orders</span><div class="state" data-state="gds"></div></div><div class="go">&rsaquo;</div></button>
+  </div>
+  <div id="installBox" class="hide"><button id="installBtn">&#11015; Install this app on this phone</button></div>
+  <div class="foot"><div id="cfgWarn" class="err hide">Web-app links are not set yet. Open config.js and paste your two links.</div>
+    <button id="logoutAll">Log out on this phone</button></div>
+</div>
+
+<div id="frameView" class="hide">
+  <div class="bar"><button id="back">&larr; Home</button><div class="t" id="ftitle"></div><button id="reload" title="Reload">&#8635;</button><button id="menu" title="Change password">&#128273;</button></div>
+  <div id="loading">Opening&hellip;</div>
+  <iframe id="frm" allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; web-share" referrerpolicy="no-referrer-when-downgrade"></iframe>
+</div>
+
+<script>
+(function () {
+  var C = window.APP_CONFIG || {};
+  var SYS = {
+    id:  { title: 'Departmental ID Card', url: C.idCardUrl },
+    gds: { title: 'GDS ID Card', url: C.gdsCardUrl }
+  };
+  var $ = function (s) { return document.querySelector(s); };
+  var store = {
+    get: function (k) { try { return localStorage.getItem(k) || ''; } catch (e) { return mem[k] || ''; } },
+    set: function (k, v) { try { localStorage.setItem(k, v); } catch (e) { mem[k] = v; } },
+    del: function (k) { try { localStorage.removeItem(k); } catch (e) { delete mem[k]; } }
+  };
+  var mem = {};
+  var validUrl = function (u) { return /^https:\/\/script\.google\.com\/.+\/exec\/?$/.test(u || '') || /^http:\/\/localhost/.test(u || ''); };
+  if (C.businessName) { $('#bizName').textContent = C.businessName; document.title = C.businessName + ' ID Cards'; }
+  if (!validUrl(SYS.id.url) || !validUrl(SYS.gds.url)) $('#cfgWarn').classList.remove('hide');
+
+  function drawStates() {
+    ['id', 'gds'].forEach(function (k) {
+      var el = document.querySelector('[data-state="' + k + '"]'), has = !!store.get('pw_' + k);
+      el.textContent = has ? '✔ Logged in on this phone' : 'Tap to log in';
+      el.className = 'state' + (has ? ' ok' : '');
+    });
+  }
+
+  function askPassword(k, msg) {
+    return new Promise(function (res) {
+      var bg = document.createElement('div'); bg.className = 'sheet-bg';
+      bg.innerHTML = '<div class="sheet"><h2>' + SYS[k].title + '</h2><p>Enter your password (owner or staff password).</p>' +
+        '<input id="pw" type="password" autocomplete="current-password" placeholder="Password">' +
+        '<label><input id="show" type="checkbox" style="width:auto"> Show password</label>' +
+        '<label><input id="rem" type="checkbox" style="width:auto" checked> Keep me logged in on this phone</label>' +
+        (msg ? '<div class="err">' + msg + '</div>' : '') +
+        '<div class="row"><button class="b2" id="cn">Cancel</button><button class="b1" id="ok">Open</button></div></div>';
+      document.body.appendChild(bg);
+      var pw = bg.querySelector('#pw'); setTimeout(function () { pw.focus(); }, 50);
+      bg.querySelector('#show').onchange = function (e) { pw.type = e.target.checked ? 'text' : 'password'; };
+      var done = function (v) { bg.remove(); res(v); };
+      bg.querySelector('#cn').onclick = function () { done(null); };
+      var ok = function () { var v = pw.value.trim(); if (!v) return pw.focus(); done({ pw: v, remember: bg.querySelector('#rem').checked }); };
+      bg.querySelector('#ok').onclick = ok;
+      pw.onkeydown = function (e) { if (e.key === 'Enter') ok(); };
+    });
+  }
+
+  var session = {};   /* passwords used only for this visit (when "keep me logged in" is off) */
+  var current = null;
+  async function openSys(k, forceAsk) {
+    var s = SYS[k];
+    if (!validUrl(s.url)) { alertBox('The link for ' + s.title + ' is not set. Open config.js and paste the web-app URL.'); return; }
+    var pw = forceAsk ? '' : (store.get('pw_' + k) || session[k] || '');
+    if (!pw) {
+      var r = await askPassword(k); if (!r) return;
+      pw = r.pw; session[k] = pw;
+      if (r.remember) store.set('pw_' + k, pw); else store.del('pw_' + k);
+      drawStates();
+    }
+    current = k;
+    $('#ftitle').textContent = s.title;
+    $('#loading').classList.remove('hide');
+    var f = $('#frm');
+    f.onload = function () { $('#loading').classList.add('hide'); };
+    f.src = s.url.replace(/\/$/, '') + '?admin=' + encodeURIComponent(pw);
+    $('#home').classList.add('hide'); $('#frameView').classList.remove('hide');
+    if (!history.state || history.state.v !== 'frame') history.pushState({ v: 'frame' }, '');
+  }
+  function goHome(fromPop) {
+    $('#frm').src = 'about:blank'; current = null;
+    $('#frameView').classList.add('hide'); $('#home').classList.remove('hide'); drawStates();
+    if (!fromPop && history.state && history.state.v === 'frame') history.back();
+  }
+  function alertBox(t) {
+    var bg = document.createElement('div'); bg.className = 'sheet-bg';
+    bg.innerHTML = '<div class="sheet"><p style="color:#1c1917;font-size:15px">' + t + '</p><div class="row"><button class="b1">OK</button></div></div>';
+    document.body.appendChild(bg); bg.querySelector('button').onclick = function () { bg.remove(); };
+  }
+
+  document.querySelectorAll('.tile').forEach(function (b) { b.onclick = function () { openSys(b.dataset.sys); }; });
+  $('#back').onclick = function () { goHome(false); };
+  $('#reload').onclick = function () { if (current) openSys(current); };
+  $('#menu').onclick = function () { if (!current) return; var k = current; store.del('pw_' + k); delete session[k]; openSys(k, true); };
+  $('#logoutAll').onclick = function () { ['id', 'gds'].forEach(function (k) { store.del('pw_' + k); delete session[k]; }); drawStates(); alertBox('Logged out on this phone. Passwords will be asked again.'); };
+  window.addEventListener('popstate', function () { if (current) goHome(true); });
+
+  /* install button (Android Chrome) */
+  var deferred = null;
+  window.addEventListener('beforeinstallprompt', function (e) { e.preventDefault(); deferred = e; $('#installBox').classList.remove('hide'); });
+  $('#installBtn').onclick = function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; $('#installBox').classList.add('hide'); }); };
+  window.addEventListener('appinstalled', function () { $('#installBox').classList.add('hide'); });
+
+  if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
+  drawStates();
+})();
+</script>
+</body>
+</html>
