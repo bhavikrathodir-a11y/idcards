@@ -11,7 +11,8 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script src="config.js"></script>
+<script>/* always load the latest config.js (never an old cached copy) */
+document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');</script>
 <style>
 :root{--red:#b3121f;--red2:#8c0d18;--yel:#ffcc00;--ink:#1c1917;--mut:#6b7280;--bg:#f6f4f1}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -39,7 +40,8 @@ button{font:inherit;cursor:pointer;border:0}
 .bar{background:var(--red);color:#fff;display:flex;align-items:center;gap:6px;padding:calc(6px + env(safe-area-inset-top)) 8px 6px}
 .bar button{background:rgba(255,255,255,.14);color:#fff;border-radius:10px;padding:7px 11px;font-weight:600}
 .bar .t{flex:1;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding-left:4px}
-#frm{flex:1;border:0;width:100%;background:#fff}
+#frames iframe{position:absolute;inset:0;border:0;width:100%;height:100%;background:#fff}
+#frames iframe.off{visibility:hidden;pointer-events:none}
 #loading{position:absolute;left:0;right:0;top:52px;text-align:center;padding:40px;color:var(--mut)}
 /* login sheet */
 .sheet-bg{position:fixed;inset:0;background:rgba(20,10,10,.55);display:flex;align-items:flex-end;justify-content:center;z-index:10}
@@ -64,13 +66,16 @@ button{font:inherit;cursor:pointer;border:0}
   </div>
   <div id="installBox" class="hide"><button id="installBtn">&#11015; Install this app on this phone</button></div>
   <div class="foot"><div id="cfgWarn" class="err hide">Web-app links are not set yet. Open config.js and paste your two links.</div>
+    <label id="anonRow" style="display:flex;gap:10px;align-items:flex-start;justify-content:center;text-align:left;max-width:460px;margin:0 auto 10px;font-size:13px;color:#44403c">
+      <input type="checkbox" id="anon" style="width:20px;height:20px;margin-top:1px;flex:none">
+      <span><b>Google account fix</b> &mdash; tick this if Chrome shows &ldquo;Sorry, unable to open the file&rdquo; (happens when 2 or more Google accounts are signed in on this phone).</span></label>
     <button id="logoutAll">Log out on this phone</button></div>
 </div>
 
 <div id="frameView" class="hide">
   <div class="bar"><button id="back">&larr; Home</button><div class="t" id="ftitle"></div><button id="reload" title="Reload">&#8635;</button><button id="menu" title="Change password">&#128273;</button></div>
   <div id="loading">Opening&hellip;</div>
-  <iframe id="frm" allow="camera; microphone; clipboard-read; clipboard-write; fullscreen; web-share" referrerpolicy="no-referrer-when-downgrade"></iframe>
+  <div id="frames" style="flex:1;position:relative"></div>
 </div>
 
 <script>
@@ -133,15 +138,26 @@ button{font:inherit;cursor:pointer;border:0}
     }
     current = k;
     $('#ftitle').textContent = s.title;
-    $('#loading').classList.remove('hide');
-    var f = $('#frm');
-    f.onload = function () { $('#loading').classList.add('hide'); };
-    f.src = s.url.replace(/\/$/, '') + '?admin=' + encodeURIComponent(pw);
+    var box = $('#frames'), f = box.querySelector('[data-sys="' + k + '"]');
+    var wanted = s.url.replace(/\/$/, '') + '?admin=' + encodeURIComponent(pw);
+    if (f && (forceAsk || f.dataset.src !== wanted)) { f.remove(); f = null; }      /* password changed: reload */
+    if (!f) {
+      $('#loading').classList.remove('hide');
+      f = document.createElement('iframe');
+      f.dataset.sys = k; f.dataset.src = wanted;
+      f.setAttribute('allow', 'camera; microphone; clipboard-read; clipboard-write; fullscreen; web-share');
+      f.setAttribute('referrerpolicy', 'no-referrer-when-downgrade');
+      if (store.get('anon') === '1') f.setAttribute('credentialless', '');   /* opens like Incognito: no Google account cookies */
+      f.onload = function () { $('#loading').classList.add('hide'); };
+      box.appendChild(f);
+      f.src = wanted;
+    } else { $('#loading').classList.add('hide'); }                          /* already loaded: instant */
+    Array.prototype.forEach.call(box.querySelectorAll('iframe'), function (x) { x.classList.toggle('off', x !== f); });
     $('#home').classList.add('hide'); $('#frameView').classList.remove('hide');
     if (!history.state || history.state.v !== 'frame') history.pushState({ v: 'frame' }, '');
   }
   function goHome(fromPop) {
-    $('#frm').src = 'about:blank'; current = null;
+    current = null;                                            /* pages stay loaded in the background */
     $('#frameView').classList.add('hide'); $('#home').classList.remove('hide'); drawStates();
     if (!fromPop && history.state && history.state.v === 'frame') history.back();
   }
@@ -153,9 +169,17 @@ button{font:inherit;cursor:pointer;border:0}
 
   document.querySelectorAll('.tile').forEach(function (b) { b.onclick = function () { openSys(b.dataset.sys); }; });
   $('#back').onclick = function () { goHome(false); };
-  $('#reload').onclick = function () { if (current) openSys(current); };
-  $('#menu').onclick = function () { if (!current) return; var k = current; store.del('pw_' + k); delete session[k]; openSys(k, true); };
-  $('#logoutAll').onclick = function () { ['id', 'gds'].forEach(function (k) { store.del('pw_' + k); delete session[k]; }); drawStates(); alertBox('Logged out on this phone. Passwords will be asked again.'); };
+  $('#reload').onclick = function () {
+    var f = $('#frames').querySelector('[data-sys="' + current + '"]');
+    if (f) { $('#loading').classList.remove('hide'); f.src = f.dataset.src; }
+  };
+  $('#menu').onclick = function () {
+    if (!current) return; var k = current;
+    store.del('pw_' + k); delete session[k];
+    var f = $('#frames').querySelector('[data-sys="' + k + '"]'); if (f) f.remove();
+    openSys(k, true);
+  };
+  $('#logoutAll').onclick = function () { ['id', 'gds'].forEach(function (k) { store.del('pw_' + k); delete session[k]; var f = $('#frames').querySelector('[data-sys="' + k + '"]'); if (f) f.remove(); }); drawStates(); alertBox('Logged out on this phone. Passwords will be asked again.'); };
   window.addEventListener('popstate', function () { if (current) goHome(true); });
 
   /* install button (Android Chrome) */
@@ -164,6 +188,9 @@ button{font:inherit;cursor:pointer;border:0}
   $('#installBtn').onclick = function () { if (!deferred) return; deferred.prompt(); deferred.userChoice.then(function () { deferred = null; $('#installBox').classList.add('hide'); }); };
   window.addEventListener('appinstalled', function () { $('#installBox').classList.add('hide'); });
 
+  $('#anon').checked = store.get('anon') === '1';
+  $('#anon').onchange = function (e) { if (e.target.checked) store.set('anon', '1'); else store.del('anon'); };
+  if (!('credentialless' in HTMLIFrameElement.prototype)) $('#anonRow').classList.add('hide');
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
   drawStates();
 })();
