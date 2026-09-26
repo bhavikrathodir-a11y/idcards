@@ -5,4 +5,5 @@ window.APP_CONFIG = {
   businessName: 'Jyoti Enterprise',
   idCardUrl:  'https://script.google.com/macros/s/AKfycbzFu2jfonxEhyAOKicaBNEeGTFAH-4eW3QauGX3zWcAhYbx8Tt1hekBuCCMSKyVwNLh/exec',
   gdsCardUrl: 'https://script.google.com/macros/s/AKfycbz16hFmEQ82tTsP0ZHAQlZk0gvHySBFnkRebX-pHWh7NKhg8_1alMhkf9ukLPvUJ-pG/exec'
+  pensCardUrl: 'https://script.google.com/macros/s/AKfycbwVUplMOBqIO5P1ECKmIvT16Uv5YympixF99lK4eZLZpCCJh1zi3HgOhrSS9DVrIY5_/exec'
 };
