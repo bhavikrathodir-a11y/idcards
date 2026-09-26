@@ -59,8 +59,9 @@ button{font:inherit;cursor:pointer;border:0}
 </head>
 <body>
 <div id="home">
-  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">Jyoti Enterprise</h1><p>Departmental, GDS &amp; Pensioner ID cards &middot; owner &amp; staff app</p></div>
+  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">Jyoti Enterprise</h1><p>Billing &amp; invoices &middot; Departmental, GDS &amp; Pensioner ID cards</p></div>
   <div class="tiles">
+    <button class="tile hide" data-sys="bill"><div class="ic" style="background:#ea6a08">&#8377;</div><div><b>GST Billing &amp; Invoice</b><span>Invoices, quotations, payments</span><div class="state" data-state="bill"></div></div><div class="go">&rsaquo;</div></button>
     <button class="tile hide" data-sys="id"><div class="ic" style="background:#b3121f">ID</div><div><b>Departmental ID Card</b><span>Orders, proofs, print PDF</span><div class="state" data-state="id"></div></div><div class="go">&rsaquo;</div></button>
     <button class="tile hide" data-sys="gds"><div class="ic" style="background:#1f3a8a">GDS</div><div><b>GDS ID Card</b><span>Gramin Dak Sevak orders</span><div class="state" data-state="gds"></div></div><div class="go">&rsaquo;</div></button>
     <button class="tile hide" data-sys="pens"><div class="ic" style="background:#0f766e">PEN</div><div><b>Pensioner ID Card</b><span>Pensioner orders</span><div class="state" data-state="pens"></div></div><div class="go">&rsaquo;</div></button>
@@ -92,6 +93,7 @@ function askLinks() {
   var bg = document.createElement('div'); bg.className = 'sheet-bg';
   bg.innerHTML = '<div class="sheet"><h2>One-time setup</h2>' +
     '<p>Paste the web-app link of each system (Apps Script \u2192 Deploy \u2192 Manage deployments \u2192 Web app URL, ending in /exec). Leave a box empty if you do not use that system.</p>' +
+    '<label style="display:block;margin-bottom:8px">GST Billing &amp; Invoice<input id="l_bill" value="' + (have.billUrl || '') + '" placeholder="https://script.google.com/.../exec"></label>' +
     '<label style="display:block;margin-bottom:8px">Departmental ID Card<input id="l_id" value="' + (have.idCardUrl || '') + '" placeholder="https://script.google.com/.../exec"></label>' +
     '<label style="display:block;margin-bottom:8px">GDS ID Card<input id="l_gds" value="' + (have.gdsCardUrl || '') + '" placeholder="https://script.google.com/.../exec"></label>' +
     '<label style="display:block;margin-bottom:8px">Pensioner ID Card<input id="l_pens" value="' + (have.pensCardUrl || '') + '" placeholder="https://script.google.com/.../exec"></label>' +
@@ -99,7 +101,7 @@ function askLinks() {
   document.body.appendChild(bg);
   bg.querySelector('#l_cancel').onclick = function () { bg.remove(); $('#cfgWarn').classList.remove('hide'); };
   bg.querySelector('#l_save').onclick = function () {
-    var v = { idCardUrl: bg.querySelector('#l_id').value.trim(), gdsCardUrl: bg.querySelector('#l_gds').value.trim(), pensCardUrl: bg.querySelector('#l_pens').value.trim() };
+    var v = { billUrl: bg.querySelector('#l_bill').value.trim(), idCardUrl: bg.querySelector('#l_id').value.trim(), gdsCardUrl: bg.querySelector('#l_gds').value.trim(), pensCardUrl: bg.querySelector('#l_pens').value.trim() };
     try { localStorage.setItem('links', JSON.stringify(v)); } catch (e) { }
     location.reload();
   };
@@ -115,9 +117,10 @@ function startApp() {
   Object.keys(BUILT_IN).forEach(function (k) { if (!C[k]) C[k] = BUILT_IN[k]; });
   try {                                                         /* links typed into this phone win when config.js is missing */
     var saved = JSON.parse(localStorage.getItem('links') || '{}');
-    ['idCardUrl', 'gdsCardUrl', 'pensCardUrl'].forEach(function (k) { if (!C[k] && saved[k]) C[k] = saved[k]; });
+    ['billUrl', 'idCardUrl', 'gdsCardUrl', 'pensCardUrl'].forEach(function (k) { if (!C[k] && saved[k]) C[k] = saved[k]; });
   } catch (e) { }
   var SYS = {
+    bill: { title: 'GST Billing & Invoice', url: C.billUrl },
     id:   { title: 'Departmental ID Card', url: C.idCardUrl },
     gds:  { title: 'GDS ID Card', url: C.gdsCardUrl },
     pens: { title: 'Pensioner ID Card', url: C.pensCardUrl }
@@ -131,7 +134,7 @@ function startApp() {
   var mem = {};
   var validUrl = function (u) { return /^https:\/\/script\.google\.com\/.+\/exec\/?$/.test(u || '') || /^http:\/\/localhost/.test(u || ''); };
   var KEYS = Object.keys(SYS).filter(function (k) { return validUrl(SYS[k].url); });
-  if (C.businessName) { $('#bizName').textContent = C.businessName; document.title = C.businessName + ' ID Cards'; }
+  if (C.businessName) { $('#bizName').textContent = C.businessName; document.title = C.businessName; }
   Object.keys(SYS).forEach(function (k) {                       /* show a tile only when its link is set */
     var t = document.querySelector('.tile[data-sys="' + k + '"]');
     if (t) t.classList.toggle('hide', !validUrl(SYS[k].url));
