@@ -59,7 +59,7 @@ button{font:inherit;cursor:pointer;border:0}
 </head>
 <body>
 <div id="home">
-  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">ID Card Manager</h1><p>Departmental, GDS &amp; Pensioner ID cards &middot; owner &amp; staff app</p></div>
+  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">Jyoti Enterprise</h1><p>Departmental, GDS &amp; Pensioner ID cards &middot; owner &amp; staff app</p></div>
   <div class="tiles">
     <button class="tile hide" data-sys="id"><div class="ic" style="background:#b3121f">ID</div><div><b>Departmental ID Card</b><span>Orders, proofs, print PDF</span><div class="state" data-state="id"></div></div><div class="go">&rsaquo;</div></button>
     <button class="tile hide" data-sys="gds"><div class="ic" style="background:#1f3a8a">GDS</div><div><b>GDS ID Card</b><span>Gramin Dak Sevak orders</span><div class="state" data-state="gds"></div></div><div class="go">&rsaquo;</div></button>
@@ -105,10 +105,14 @@ function askLinks() {
   };
 }
 
+/* no links are kept in this file - they are typed once on each phone / computer */
+var BUILT_IN = { businessName: 'Jyoti Enterprise' };
+
 function startApp() {
   if (window.__started) return;
   window.__started = true;
   var C = window.APP_CONFIG || {};
+  Object.keys(BUILT_IN).forEach(function (k) { if (!C[k]) C[k] = BUILT_IN[k]; });
   try {                                                         /* links typed into this phone win when config.js is missing */
     var saved = JSON.parse(localStorage.getItem('links') || '{}');
     ['idCardUrl', 'gdsCardUrl', 'pensCardUrl'].forEach(function (k) { if (!C[k] && saved[k]) C[k] = saved[k]; });

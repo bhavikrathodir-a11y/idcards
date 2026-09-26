@@ -1,9 +1,4 @@
-/* ====== EDIT ONLY THIS FILE ======
-   Paste your two web-app links (Deploy > Manage deployments > Web app URL, ends with /exec).
-   Do NOT put passwords here - each person types his own password in the app. */
-window.APP_CONFIG = {
-  businessName: 'Jyoti Enterprise',
-  idCardUrl:  'https://script.google.com/macros/s/AKfycbzFu2jfonxEhyAOKicaBNEeGTFAH-4eW3QauGX3zWcAhYbx8Tt1hekBuCCMSKyVwNLh/exec',
-  gdsCardUrl: 'https://script.google.com/macros/s/AKfycbz16hFmEQ82tTsP0ZHAQlZk0gvHySBFnkRebX-pHWh7NKhg8_1alMhkf9ukLPvUJ-pG/exec'
-  pensCardUrl: 'https://script.google.com/macros/s/AKfycbwVUplMOBqIO5P1ECKmIvT16Uv5YympixF99lK4eZLZpCCJh1zi3HgOhrSS9DVrIY5_/exec'
-};
+/* This file is OPTIONAL and is left empty on purpose.
+   The web-app links are typed once inside the app itself (home screen > "Change system links")
+   and stay on that phone / computer only, so they are never published on GitHub. */
+window.APP_CONFIG = { businessName: 'Jyoti Enterprise' };
