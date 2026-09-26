@@ -60,10 +60,11 @@ button{font:inherit;cursor:pointer;border:0}
 </head>
 <body>
 <div id="home">
-  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">ID Card Manager</h1><p>Departmental &amp; GDS ID card orders &middot; owner &amp; staff app</p></div>
+  <div class="hero"><img src="icon-192.png" alt=""><h1 id="bizName">ID Card Manager</h1><p>Departmental, GDS &amp; Pensioner ID cards &middot; owner &amp; staff app</p></div>
   <div class="tiles">
     <button class="tile" data-sys="id"><div class="ic" style="background:#b3121f">ID</div><div><b>Departmental ID Card</b><span>Orders, proofs, print PDF</span><div class="state" data-state="id"></div></div><div class="go">&rsaquo;</div></button>
     <button class="tile" data-sys="gds"><div class="ic" style="background:#1f3a8a">GDS</div><div><b>GDS ID Card</b><span>Gramin Dak Sevak orders</span><div class="state" data-state="gds"></div></div><div class="go">&rsaquo;</div></button>
+    <button class="tile" data-sys="pens"><div class="ic" style="background:#0f766e">PEN</div><div><b>Pensioner ID Card</b><span>Pensioner orders</span><div class="state" data-state="pens"></div></div><div class="go">&rsaquo;</div></button>
   </div>
   <div id="installBox" class="hide"><button id="installBtn">&#11015; Install this app on this phone</button></div>
   <div class="foot"><div id="cfgWarn" class="err hide">Web-app links are not set yet. Open config.js and paste your two links.</div>
@@ -88,8 +89,9 @@ button{font:inherit;cursor:pointer;border:0}
 (function () {
   var C = window.APP_CONFIG || {};
   var SYS = {
-    id:  { title: 'Departmental ID Card', url: C.idCardUrl },
-    gds: { title: 'GDS ID Card', url: C.gdsCardUrl }
+    id:   { title: 'Departmental ID Card', url: C.idCardUrl },
+    gds:  { title: 'GDS ID Card', url: C.gdsCardUrl },
+    pens: { title: 'Pensioner ID Card', url: C.pensCardUrl }
   };
   var $ = function (s) { return document.querySelector(s); };
   var store = {
@@ -99,11 +101,16 @@ button{font:inherit;cursor:pointer;border:0}
   };
   var mem = {};
   var validUrl = function (u) { return /^https:\/\/script\.google\.com\/.+\/exec\/?$/.test(u || '') || /^http:\/\/localhost/.test(u || ''); };
+  var KEYS = Object.keys(SYS).filter(function (k) { return validUrl(SYS[k].url); });
   if (C.businessName) { $('#bizName').textContent = C.businessName; document.title = C.businessName + ' ID Cards'; }
-  if (!validUrl(SYS.id.url) || !validUrl(SYS.gds.url)) $('#cfgWarn').classList.remove('hide');
+  Object.keys(SYS).forEach(function (k) {                       /* hide a tile whose link is not set */
+    var t = document.querySelector('.tile[data-sys="' + k + '"]');
+    if (t && !validUrl(SYS[k].url)) t.classList.add('hide');
+  });
+  if (!KEYS.length) $('#cfgWarn').classList.remove('hide');
 
   function drawStates() {
-    ['id', 'gds'].forEach(function (k) {
+    KEYS.forEach(function (k) {
       var el = document.querySelector('[data-state="' + k + '"]'), has = !!store.get('pw_' + k);
       el.textContent = has ? '✔ Logged in on this phone' : 'Tap to log in';
       el.className = 'state' + (has ? ' ok' : '');
@@ -185,7 +192,7 @@ button{font:inherit;cursor:pointer;border:0}
     var f = $('#frames').querySelector('[data-sys="' + k + '"]'); if (f) f.remove();
     openSys(k, true);
   };
-  $('#logoutAll').onclick = function () { ['id', 'gds'].forEach(function (k) { store.del('pw_' + k); delete session[k]; var f = $('#frames').querySelector('[data-sys="' + k + '"]'); if (f) f.remove(); }); drawStates(); alertBox('Logged out on this phone. Passwords will be asked again.'); };
+  $('#logoutAll').onclick = function () { KEYS.forEach(function (k) { store.del('pw_' + k); delete session[k]; var f = $('#frames').querySelector('[data-sys="' + k + '"]'); if (f) f.remove(); }); drawStates(); alertBox('Logged out on this phone. Passwords will be asked again.'); };
   window.addEventListener('popstate', function () { if (current) goHome(true); });
 
   /* install button (Android Chrome) */
