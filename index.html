@@ -11,8 +11,7 @@
 <link rel="manifest" href="manifest.json">
 <link rel="icon" href="icon-192.png">
 <link rel="apple-touch-icon" href="apple-touch-icon.png">
-<script>/* always load the latest config.js (never an old cached copy) */
-document.write('<script src="config.js?v=' + Date.now() + '"><\/script>');</script>
+<script src="config.js"></script>
 <style>
 :root{--red:#b3121f;--red2:#8c0d18;--yel:#ffcc00;--ink:#1c1917;--mut:#6b7280;--bg:#f6f4f1}
 *{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
@@ -86,7 +85,7 @@ button{font:inherit;cursor:pointer;border:0}
 </div>
 
 <script>
-(function () {
+function startApp() {
   var C = window.APP_CONFIG || {};
   var SYS = {
     id:   { title: 'Departmental ID Card', url: C.idCardUrl },
@@ -211,7 +210,16 @@ button{font:inherit;cursor:pointer;border:0}
   if (!('credentialless' in HTMLIFrameElement.prototype)) $('#anonRow').classList.add('hide');
   if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(function () { });
   drawStates();
-})();
+}
+/* if config.js did not load (blocked, cached badly, offline), fetch it before starting */
+if (window.APP_CONFIG) startApp();
+else {
+  fetch('config.js?v=' + Date.now(), { cache: 'no-store' })
+    .then(function (r) { return r.text(); })
+    .then(function (t) { try { (0, eval)(t); } catch (e) { } })
+    .catch(function () { })
+    .then(function () { startApp(); });
+}
 </script>
 </body>
 </html>
