@@ -155,7 +155,7 @@ function startApp() {
       bg.innerHTML = '<div class="sheet"><h2>' + SYS[k].title + '</h2><p>Enter your password (owner or staff password).</p>' +
         '<input id="pw" type="password" autocomplete="current-password" placeholder="Password">' +
         '<label><input id="show" type="checkbox" style="width:auto"> Show password</label>' +
-        '<label><input id="rem" type="checkbox" style="width:auto" checked> Keep me logged in on this phone</label>' +
+        '<label><input id="rem" type="checkbox" style="width:auto"> Keep me logged in on this phone</label>' +
         (msg ? '<div class="err">' + msg + '</div>' : '') +
         '<div class="row"><button class="b2" id="cn">Cancel</button><button class="b1" id="ok">Open</button></div></div>';
       document.body.appendChild(bg);
